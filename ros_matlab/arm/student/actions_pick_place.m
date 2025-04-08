@@ -7,8 +7,8 @@ rosshutdown;
 pause(2);       
 
 %% Set IP address for master and node:
-masterHostIP = "192.168.56.101";
-nodeHostIP = "192.168.56.1";
+masterHostIP = "100.113.93.72";
+nodeHostIP = "100.127.95.110";
 rosinit(masterHostIP, 11311, "NodeHost",nodeHostIP);
 
 %% ROS Class handle
@@ -42,14 +42,16 @@ resetWorld(optns);      % reset models through a gazebo service
 
 %% 04 Get Model Poses
 
-type = 'gazebo'; % gazebo, ptcloud, cam, manual
+type = 'manual'; % gazebo, ptcloud, cam, manual
 disp('Getting object goal pose(s)...')
 
 % Get models from Gazebo
 models = getModels(optns);
 
+disp(models)
+
 % Number of models to pick (you can hard code or randomize)
-n = 1; % n = randi([3 25]);
+n = 8; % n = randi([3 25]);
 
 % Manual Specification of fixed objects (may change from year-to-year)
 rCan1 = [0.4, -0.5, 0.14, -pi/2, -pi 0];
@@ -82,13 +84,13 @@ if strcmp(type,'gazebo')
         model_name = models.ModelNames{23+randi([7,8])};
 
         % 05.1.2 Get Model pose
-        fprintf('Picking up model: %s \n',model_name);
+        fprintf('=== Picking up model: %s \n',model_name);
         get_robot_gripper_pose_flag = 0; % 0 - no model of fingers available
         [mat_R_T_G, mat_R_T_M] = get_robot_object_pose_wrt_base_link(model_name,get_robot_gripper_pose_flag,optns);
-       
+
         % 05.2 Pick Model
         strategy = 'topdown';               % Assign strategy: topdown, direct
-        ret = pick(strategy, mat_R_T_M,optns); % Can have optional starting opse for ctraj like: ret = pick(strategy, mat_R_T_M,mat_R_T_G);
+        ret = pick(strategy, mat_R_T_M,optns); % Can have optional starting pose for ctraj like: ret = pick(strategy, mat_R_T_M,mat_R_T_G);
         
         % 05.3 Place
         if ~ret   % If no errors, continue to place in bin       
@@ -97,7 +99,7 @@ if strcmp(type,'gazebo')
             place_pose = set_manual_goal(greenBin);
             
             % Move to Bin 
-            disp('Attempting to place in bin...')
+            disp('=== Attempting to place in bin...')
             strategy = 'topdown';            
             ret = moveToBin(strategy,mat_R_T_M,place_pose,optns);
         end
@@ -106,7 +108,7 @@ if strcmp(type,'gazebo')
         if ~ret     % If no errors
 
             % Move to ready position
-            ret = moveToQ('qr');
+            ret = moveToQ('qr', optns);
         end
 
         % Control loop
@@ -120,15 +122,16 @@ elseif strcmp(type,'manual')
         %% 05.1 Get Model Pose
         
         % 05.1.1 Get Model Name
-        model_name = models.ModelNames{23+i};
+        model_name = models.ModelNames{27+i};
 
         % 05.1.2 Get Model pose
-        fprintf('Picking up model: %s \n',model_name);
+        fprintf('=== Picking up model: %s \n',model_name);
+        get_robot_gripper_pose_flag = 0; % 0 - no model of fingers available
         [mat_R_T_G, mat_R_T_M] = get_robot_object_pose_wrt_base_link(model_name,get_robot_gripper_pose_flag,optns);
-       
+
         % 05.2 Pick Model
-        strategy = 'topdown';            % Assign strategy: topdown, direct
-        ret = pick(strategy, mat_R_T_M); % Can have optional starting opse for ctraj like: ret = pick(strategy, mat_R_T_M,mat_R_T_G);
+        strategy = 'topdown';               % Assign strategy: topdown, direct
+        ret = pick(strategy, mat_R_T_M,optns); % Can have optional starting pose for ctraj like: ret = pick(strategy, mat_R_T_M,mat_R_T_G);
         
         % 05.3 Place
         if ~ret   % If no errors, continue to place in bin       
@@ -137,16 +140,16 @@ elseif strcmp(type,'manual')
             place_pose = set_manual_goal(greenBin);
             
             % Move to Bin 
-            disp('Attempting to place in bin...')
+            disp('=== Attempting to place in bin...')
             strategy = 'topdown';            
-            ret = moveToBin(strategy,mat_R_T_M,place_pose);
+            ret = moveToBin(strategy,mat_R_T_M,place_pose,optns);
         end
 
         % 05.4 Return to home
         if ~ret     % If no errors
 
             % Move to ready position
-            ret = moveToQ('qr');
+            ret = moveToQ('qr', optns);
         end
 
         % Control loop

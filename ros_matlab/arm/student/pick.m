@@ -29,6 +29,8 @@ function grip_result = pick(strategy,objectData,optns)
         mat_R_T_M = mat_R_T_M{1};
     end
 
+    travelZOffset = 0.5;
+
     %% 1) Determine z offset and grip distance required
     %   z offset includes offset for both the base and the gripper
         if strcmp(string(label), "pouch")
@@ -36,7 +38,7 @@ function grip_result = pick(strategy,objectData,optns)
             doGripValue = 0.62;
         elseif strcmp(string(label), "can")
             zOffset = 0.1;
-            doGripValue = 0.24;
+            doGripValue = 0.23;
         elseif strcmp(string(label), "bottle")
             zOffset = 0.12;
             doGripValue = 0.36;
@@ -45,7 +47,9 @@ function grip_result = pick(strategy,objectData,optns)
     %% 2) Move to desired location
         % Account for base offset + Hover over object
         if strcmp(strategy,'topdown')
+            safe_over_R_T_M = lift(mat_R_T_M,travelZOffset);
             over_R_T_M = lift(mat_R_T_M,zOffset);
+            MoveSafeToOb = moveTo(safe_over_R_T_M, optns);
             MoveToOb = moveTo(over_R_T_M, optns);
             disp(over_R_T_M);
         

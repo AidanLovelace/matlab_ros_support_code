@@ -24,7 +24,7 @@ function grip_result = moveToBin(strategy,mat_current,mat_bin,optns)
         
         % Lift
         disp('Lifting object....')
-        over_R_T_M = lift(mat_current, 0.20);
+        over_R_T_M = lift(mat_current, 0.50);
         traj_result = moveTo(over_R_T_M, optns);
 
         % Displace
