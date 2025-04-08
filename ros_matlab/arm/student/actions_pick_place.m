@@ -1,44 +1,7 @@
 % Pick and place
 
-%% 00 Connect to ROS (use your own masterhost IP address)
-clc
-clear
-rosshutdown;
-pause(2);       
-
-%% Set IP address for master and node:
-masterHostIP = "100.113.93.72";
-nodeHostIP = "100.127.95.110";
-rosinit(masterHostIP, 11311, "NodeHost",nodeHostIP);
-
-%% ROS Class handle
-
-% r will contains all publisher/subscriber/service/action/kinematic/tf info
-disp("Creating Robot Handle...");
-r = rosClassHandle_UR5e;
-
-%% Options 
-
-% Create global dictionary. Passed to all functions. Includes robot handle
-keys   = ["debug", "toolFlag", "traj_steps", "z_offset", "traj_duration", "frameAdjustmentFlag", "toolAdjustmentFlag", "toolAdjustment", "rHandle"];
-values = {      0,          0,            1,       0.09,               2,                     1,                    1,            0.165,         r};
-
-% Instantiate the dictionary: values can be access via {}, i.e. optns{'key'}
-disp("Creating dictionary...");
-optns = dictionary(keys,values);
-
-%% 02 Go Home 
-
-% Always move arm to start position and open fingers
-disp('Going home...');  % Always use display commands to inform reader of what is happening
-
-% Open fingers and move arm to qr or qz start configuration 
-goHome('qr', optns);    
-
-%% 03 Reset the simulation
-
-disp('Resetting the world...');
-resetWorld(optns);      % reset models through a gazebo service
+%% 00 Initialize Connection to ROS & Robot Context
+[optns] = init_rosgazebo_conn();
 
 %% 04 Get Model Poses
 
@@ -51,7 +14,7 @@ models = getModels(optns);
 disp(models)
 
 % Number of models to pick (you can hard code or randomize)
-n = 8; % n = randi([3 25]);
+n = 6; % n = randi([3 25]);
 
 % Manual Specification of fixed objects (may change from year-to-year)
 rCan1 = [0.4, -0.5, 0.14, -pi/2, -pi 0];
