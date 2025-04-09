@@ -28,10 +28,10 @@ function mat_R_T_G = get_gripper_pose(optns,find_alignment)
     % Get end-effector pose wrt to base via getTransform(tftree,targetframe,sourceframe), where sourceframe is the reference frame 
     % However, that order of parameters does not give the right answer. Need to reverse them!!!
     try waitForTransform(tftree,'base_link','tool0',5);
-        current_pose = getTransform(tftree,base,end_effector,rostime('now'),'Timeout', optns('tf_listening_time'));
+        current_pose = getTransform(tftree,base,end_effector,rostime('now'),'Timeout', r.tf_listening_time);
     catch
         % Try again
-        current_pose = getTransform(tftree,base,end_effector,rostime('now'),'Timeout', tf_listening_time);
+        current_pose = getTransform(tftree,base,end_effector,rostime('now'),'Timeout', r.tf_listening_time);
     end  
         
     % Convert gripper pose to matlab format
