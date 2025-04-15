@@ -10,6 +10,8 @@ function mat_R_T_G = get_gripper_pose(optns,fing_alignment)
         fing_alignment = 'x';
     end
 
+    r = optns{'rHandle'};
+
     % Indicates matlab's base_link does not match ros. Need adjustment.
     frameAdjustmentFlag = optns('frameAdjustmentFlag');
     frameAdjustmentFlag = frameAdjustmentFlag{1};
@@ -19,8 +21,7 @@ function mat_R_T_G = get_gripper_pose(optns,fing_alignment)
     toolAdjustmentFlag  = toolAdjustmentFlag{1}; 
     
     % List to tftree
-    tf_listening_time   = optns('tf_listening_time'); 
-    tf_listening_time   = tf_listening_time{1};
+    tf_listening_time   = r.tf_listening_time; 
     
     % Get gripper transform
     tftree       = rostf('DataFormat','struct');     
@@ -37,7 +38,7 @@ function mat_R_T_G = get_gripper_pose(optns,fing_alignment)
     end  
         
     % Convert gripper pose to matlab format
-    mat_R_T_G = ros2matlabPose(current_pose,frameAdjustmentFlag,toolAdjustmentFlag); 
+    mat_R_T_G = ros2matlabPose(current_pose,frameAdjustmentFlag,toolAdjustmentFlag, optns); 
 
     %% Adjust orientation of gripper
     if strcmpi(fing_alignment,'x')

@@ -85,7 +85,7 @@ classdef rosClassHandle_UR5e
             r.pt_cloud_sub            = rossubscriber('/camera/depth/points','DataFormat','struct');
             
             % Yolo Neural Network
-            %r.general_detector        = load("detector_gral_sim.mat");   
+            r.general_detector        = load("detector_gral_sim.mat");   
         end
 
     end
