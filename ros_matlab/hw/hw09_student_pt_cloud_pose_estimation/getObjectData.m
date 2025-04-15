@@ -41,10 +41,10 @@ function objectData = getObjectData(ptCloud_base, nonPlane_pic, myImg, bboxes, n
     tform_to_cam = rigidtform3d(cam_to_base_pose);
 
     % TODO: Transform the reference frame of point clouds ptCloud_base with tform_to_cam
-    ptCloud_tform_cam = 
+    ptCloud_tform_cam = pctransform(ptCloud_base,tform_to_cam);
 
     % TODO: Also do for non-plane specific points nonPlane_pic with tform_to_cam
-    nonPlane_tform_cam = 
+    nonPlane_tform_cam = pctransform(nonPlane_pic,tform_to_cam);
     
     %% 02 Estimate object pose wrt to base
     disp("Finding object pose with respect to base_link...")
@@ -56,8 +56,7 @@ function objectData = getObjectData(ptCloud_base, nonPlane_pic, myImg, bboxes, n
     %[xyz,theta,ptCloud_vec,scene_pca_vec] = findObjectPoses(ptCloud_tform, myImg, bboxes, gridDownsample, nonPlaneMask);
 
     % If using merged point clouds:
-    [xyz,theta,ptCloud_vec,scene_pca_vec] = betterObjectPoses(ptCloud_tform_cam, ...    % all points wrt to base
-                                                              nonPlane_tform_cam, ...   % non plane points wrt to base
+    [xyz,theta,ptCloud_vec,scene_pca_vec] = betterObjectPoses(nonPlane_tform_cam, ...    % all points wrt to base
                                                               myImg, ...                % rgb image
                                                               bboxes, ...               % yolo bounding boxes
                                                               gridDownsample, ...       % downsample factor

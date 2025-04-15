@@ -6,8 +6,8 @@
     pause(2);       
     
     %% Set IP address for master and node:
-    masterHostIP = "192.168.56.101";
-    nodeHostIP = "192.168.56.1";
+    masterHostIP = "100.113.93.72";
+    nodeHostIP = "100.127.95.110";
     rosinit(masterHostIP, 11311, "NodeHost",nodeHostIP);
     
     %% 01 ROS Class handle
@@ -52,3 +52,5 @@
     
     % Get the pose of each detected object
     objectData = getObjectData(ptCloud_pic, nonPlane_pic, myImg, bboxes, numOfObjects, base_to_cam_pose, cam_to_base_pose, labeled);
+
+    objectData
