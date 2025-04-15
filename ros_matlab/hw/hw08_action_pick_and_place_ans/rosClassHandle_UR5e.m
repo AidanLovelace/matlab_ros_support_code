@@ -38,6 +38,10 @@ classdef rosClassHandle_UR5e
 
         % Yolo NN
         general_detector;
+        can_detector;
+        pouch_detector;
+        %marker_detector;
+        %spam_detector;
 
     end
 
@@ -85,7 +89,27 @@ classdef rosClassHandle_UR5e
             r.pt_cloud_sub            = rossubscriber('/camera/depth/points','DataFormat','struct');
             
             % Yolo Neural Network (careful with the path)
-            r.general_detector        = load("./vision_tutorials/detectors/detector_gral_sim.mat");   
+            % General
+            disp('Loading YOLO Gral Sim Detector(s)... Please wait...');
+            r.general_detector = load("./vision_tutorials/detectors/detector_gral_sim.mat");   
+
+            % Can
+            disp('Loading YOLO Can Sim Detector(s)... Please wait...');
+            r.can_detector     = load("./vision_tutorials/detectors/detector_can_sim.mat");   
+
+            % Pouch % TODO: needs to be trained/replaced for multicolor
+            disp('Loading YOLO Pouch Sim Detector(s)... Please wait...');
+            r.pouch_detector   = load("./vision_tutorials/detectors/detector_pouch_sim.mat");   
+            
+            % Marker
+            %disp('Loading YOLO Maker Sim Detector(s)... Please wait...');
+            %r.marker_detector   = load("./vision_tutorials/detectors/detector_marker_sim.mat");   % Needs to be trained
+
+            % Marker
+            %disp('Loading YOLO Spam Sim Detector(s)... Please wait...');
+            %r.spam_detector   = load("./vision_tutorials/detectors/detector_spam_sim.mat");   % Needs to be trained
+                       
+            disp('Finished loading all detectors...');
         end
 
     end
