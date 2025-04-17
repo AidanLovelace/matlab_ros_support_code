@@ -1,4 +1,4 @@
-function grip_result = place(strategy,optns)
+function grip_result = place(strategy,label,optns)
 %--------------------------------------------------------------------------
 
 %--------------------------------------------------------------------------
