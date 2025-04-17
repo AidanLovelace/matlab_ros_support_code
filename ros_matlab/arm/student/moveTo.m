@@ -65,7 +65,7 @@ function [traj_result,mat_joint_traj] = moveTo(mat_R_T_M,optns)
     % Finally send ros trajectory with traj_steps
     disp('Sending traj to action server...')
     
-    try waitForServer(r.pick_traj_act_client)
+    try waitForServer(r.pick_traj_act_client);
         disp('Connected to Arm server. Moving arm...')
         [traj_result,state,status] = sendGoalAndWait(r.pick_traj_act_client,traj_goal);
     catch

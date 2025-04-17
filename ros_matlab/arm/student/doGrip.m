@@ -38,7 +38,7 @@ function [res,state] = doGrip(type,optns,doGripValue )
     %% Send action goal
     disp('Sending grip goal...');
 
-    try waitForServer(r.grip_action_client,2)
+    try waitForServer(r.grip_action_client,2);
         disp('Connected to Grip server. Moving fingers...')
         [res,state,status] = sendGoalAndWait(r.grip_action_client,grip_goal);
     catch
