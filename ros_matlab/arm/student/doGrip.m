@@ -36,14 +36,20 @@ function [res,state] = doGrip(type,optns,doGripValue )
     % If so, do not call action
     
     %% Send action goal
-    disp('Sending grip goal...');
+    if optns{'debug'}
+        disp('Sending grip goal...');
+    end
 
     try waitForServer(r.grip_action_client,2);
-        disp('Connected to Grip server. Moving fingers...')
+        if optns{'debug'}
+            disp('Connected to Grip server. Moving fingers...');
+        end
         [res,state,status] = sendGoalAndWait(r.grip_action_client,grip_goal);
     catch
         % Re-attempt
-        disp('No server..? Trying again...');
+        if optns{'debug'}
+            disp('Grip server not available. Trying again...');
+        end
         [res,state,status] = sendGoalAndWait(r.grip_action_client,grip_goal);
     end    
 end

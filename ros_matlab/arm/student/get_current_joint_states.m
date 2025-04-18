@@ -17,7 +17,9 @@ function [mat_cur_q,robot_joint_names] = get_current_joint_states(optns)
     r = optns{'rHandle'}; 
     
     % Receive message in ROS format
-    disp('Getting robot current joints...');
+    if optns{'debug'}
+        disp('Getting robot current joints...');
+    end
     
     try
         ros_cur_jnt_state_msg = receive(r.joint_state_sub,2);

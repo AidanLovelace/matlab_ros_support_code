@@ -23,7 +23,9 @@ function [ret,q,state,status] = goHome(config,optns)
     % status [char]- Status text
     %----------------------------------------------------------------------
     % Open Fingers
-    disp('Opening fingers...')
+    if optns{'debug'}
+        disp('Opening fingers...');
+    end
     doGrip('place', optns);
 
     % Move arm according to config

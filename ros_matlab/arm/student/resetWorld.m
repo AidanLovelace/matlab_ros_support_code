@@ -5,7 +5,9 @@ function resetWorld(optns)
 % Input: (dict) optns
 % Output: None
 %-------------------------------------------------------------------------- 
-    disp('Resetting the world...');
+    if optns{'debug'}
+        disp('Resetting the world...');
+    end    
     
     % TODO: 01 Get robot handle
     r = optns{"rHandle"};

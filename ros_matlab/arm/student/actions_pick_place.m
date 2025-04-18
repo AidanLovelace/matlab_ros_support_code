@@ -1,7 +1,7 @@
 % Pick and place
 
 %% 00 Initialize Connection to ROS & Robot Context
-[optns] = init_rosgazebo_conn();
+optns = init_rosgazebo_conn();
 
 %% 04 Get Model Poses
 

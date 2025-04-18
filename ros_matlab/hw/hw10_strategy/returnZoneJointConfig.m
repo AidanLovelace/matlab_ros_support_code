@@ -25,11 +25,11 @@ function [start_q] = returnZoneJointConfig(zoneInspect)
 
     %% 'Zone 1'
     if strcmp(zoneInspect, "Zone1")       
-        start_q = [0.7,   -0.2818,    1.9993,   -1.7175,   -0.0003,    0.6482];
+        start_q = [0.7,   -0.2818,    1.75,   -1.7175,   -0.0003,    0.6482];
     
     %% 'Zone 2'
     elseif strcmp(zoneInspect, "Zone2")
-        start_q = [-1.8380,   -0.0978,    1.8084,   -1.7105,    6.2830,     4.4452];
+        start_q = [-1.8380,   -0.0978,    1.75,   -1.7105,    6.2830,     4.4452];
 
 
     %% 'Zone 3'

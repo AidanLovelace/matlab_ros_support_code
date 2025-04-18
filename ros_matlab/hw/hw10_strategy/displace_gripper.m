@@ -16,7 +16,7 @@ function gripper_pose = displace_gripper(gripper_pose,optns,direction,offset,ang
 %--------------------------------------------------------------------------
 
     %% Local Variables
-    optns('traj_duration')={[0.25]};
+    optns('traj_duration')={[0.5]};
 
     %% Default options
     if nargin == 2

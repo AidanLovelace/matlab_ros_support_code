@@ -24,9 +24,6 @@ function [res,q] = moveToQ(config,optns,custom)
     % Create action goal message from client
     traj_goal = rosmessage(r.pick_traj_act_client); 
 
-    %% Cancelling feedback/result fncn due to 2025 bug in matlab-ros
-    r.pick_traj_act_client.FeedbackFcn = [];      
-    r.pick_traj_act_client.ResultFcn = [];
     % Set to qr
     if nargin == 0 || strcmp(config,'qr')
         % Ready config
@@ -60,10 +57,14 @@ function [res,q] = moveToQ(config,optns,custom)
     
     %% Send ros trajectory with traj_steps
     if waitForServer(r.pick_traj_act_client)
-        disp('Connected to Arm server. Moving arm...')
+        if optns{'debug'}
+            disp('Connected to Arm server. Moving arm...')
+        end
         [res,state,status] = sendGoalAndWait(r.pick_traj_act_client,traj_goal);
     else
-        disp('First try failed... Trying again...');
+        if optns{'debug'}
+            disp('Failed to connect to Arm server. Retrying...');
+        end
         [res,state,status] = sendGoalAndWait(r.pick_traj_act_client,traj_goal);
     end
     

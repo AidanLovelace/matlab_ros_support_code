@@ -1,4 +1,4 @@
-function [mat_joint_traj,robot_joint_names] = convertPoseTraj2JointTraj(mat_traj,optns)
+function [mat_joint_traj,robot_joint_names] = ikWithLimits(mat_traj,optns)
     %-------------------------------------------------------------
     % convertPoseTraj2JointTraj
     % Compute IKs for Cartesian trajectory. Will need to:
@@ -18,7 +18,6 @@ function [mat_joint_traj,robot_joint_names] = convertPoseTraj2JointTraj(mat_traj
     
     % Extract robot
     r = optns{'rHandle'};
-    
 
     %1. Size in terms 4x4xn
     traj_sz = size(mat_traj);
@@ -39,28 +38,26 @@ function [mat_joint_traj,robot_joint_names] = convertPoseTraj2JointTraj(mat_traj
     [mat_cur_q,robot_joint_names] = get_current_joint_states(optns);
 
     % Check Joint Angle Integrity for all angles
-    if max( abs(mat_cur_q) ) > 2*pi 
-        error('Subscribed joints > 2*pi. Not possible. Consider restarting gazebo...')
-        fprintf('mat_cur_q: '); fprintf('%.2f,', mat_cur_q);fprintf('\n')
-    end
+    % if ~checkJointLimits(mat_cur_q)
+    %     error('Subscribed joints outside joint limits.')
+    %     fprintf('mat_cur_q: '); fprintf('%.2f,', mat_cur_q);fprintf('\n')
+    % end
     
     % Elbow Down a problem? Force elbow and w4 guesses:
-    mat_cur_q(3) = pi/2; mat_cur_q(4) = -pi/2;
+    % mat_cur_q(3) = pi/2; mat_cur_q(4) = -pi/2;
 
     % 5. Go through trajectory loop
     % Check for time complexity. Can we improve efficiency.
     for i = 1:num_traj_points
-        [des_q, ~] = r.ik('tool0',...
-                          mat_traj(:,:,i), ...
-                          r.ik_weights, ...
-                          mat_cur_q); 
-        
+        poseCon = constraintPoseTarget('tool0', 'TargetTransform', mat_traj(:,:,i), 'Weights', r.gik_weights);
+        [des_q, ~] = r.gik(mat_cur_q, poseCon, r.jointCon); 
+
         % Check Joint Angle Integrity
-        if max( abs(des_q) ) > 2*pi 
-            disp('IK joints > 2*pi. Not possible. Will keep the same joint angles...')
-            mat_joint_traj(i,:) = mat_cur_q;
-            return 
-        end
+        % if max( abs(des_q) ) > 2*pi || ~checkJointLimits(des_q)
+        %     disp('IK joints outside joint limits. Will keep the same joint angles...')
+        %     mat_joint_traj(i,:) = mat_cur_q;
+        %     return 
+        % end
 
 
         % Print soln for debugging purposes:

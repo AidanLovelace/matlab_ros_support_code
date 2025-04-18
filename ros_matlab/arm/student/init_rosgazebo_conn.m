@@ -1,4 +1,4 @@
-function [optns] = init_rosgazebo_conn()
+function optns = init_rosgazebo_conn()
     %% 00 Connect to ROS (use your own masterhost IP address)
     clc
     clear
@@ -6,7 +6,7 @@ function [optns] = init_rosgazebo_conn()
     pause(2);       
     
     %% Set IP address for master and node:
-    masterHostIP = "100.113.93.72";
+    masterHostIP = "100.113.159.11";
     nodeHostIP = "100.127.95.110";
     rosinit(masterHostIP, 11311, "NodeHost",nodeHostIP);
 

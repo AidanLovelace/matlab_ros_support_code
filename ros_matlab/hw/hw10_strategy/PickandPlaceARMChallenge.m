@@ -24,33 +24,33 @@ function [zoneComplete] = PickandPlaceARMChallenge(zoneInspect, optns)
     [startZone] = returnZoneJointConfig(zoneInspect);
     
     % Move the robot to the inspected object's joint configuration
-    fprintf('01 Moving to zone %s at config %s...\n', zoneInspect, strjoin(string(startZone)) ); 
+    cprintf('blue', '%s: ', zoneInspect); fprintf('01 Moving to zone at config %s...\n', strjoin(string(startZone)) ); 
     moveToQ("Custom",optns,startZone);
     
     % Capture an image of the zone and detect objects
-    disp('02 Object Detection...\n');
+    cprintf('blue', '%s: ', zoneInspect); fprintf('02 Object Detection...\n');
     [bboxes, ~, labeled, numOfObjects, myImg, annotatedImage] = getLabeledImg(zoneInspect,optns);
     
     % Capture a point cloud of the zone
-    disp('03 Computing Merged Point Cloud...\n');
+    cprintf('blue', '%s: ', zoneInspect); fprintf('03 Computing Merged Point Cloud...\n');
     [ptCloud_pic, nonPlane_pic, ptCloud_table, base_to_cam_pose, cam_to_base_pose] = getMergedPTC(zoneInspect,optns); 
     
     % Get the pose of each detected object
-    disp('04 Obtaining object poses...\n');
+    cprintf('blue', '%s: ', zoneInspect); fprintf('04 Obtaining object poses...\n');
     objectData = getObjectData(ptCloud_pic, nonPlane_pic, myImg, bboxes, numOfObjects, base_to_cam_pose, cam_to_base_pose, labeled);     
-
+    objectData
     % Iterate over each detected object
     numObjects = size(objectData,1);
-    fprintf('I have identified %d objects...\n', numObjects);
+    cprintf('blue', '%s: ', zoneInspect); fprintf('Identified %d objects...\n', numObjects);
     for j = 1:numObjects
-
+        cprintf('magenta', ' - Object %d: ', j); fprintf('Picking %s...\n', string(objectData(j,1)));
         % pick
-        disp('05 Beginning top-down pick from center....\n');
+        fprintf('    - 05 Beginning top-down pick from center....\n');
         moveToQ("Custom",optns,startZone);
         pick("topdown",objectData(j,:),optns);
         
         % place
-        disp('06 Beginning place....\n');
+        fprintf('    - 06 Beginning place....\n');
         moveToQ("Custom",optns,startZone);
         place("topdown",objectData(j,1),optns); % label for knowing which bin to go to
     

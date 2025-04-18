@@ -32,8 +32,10 @@ function [traj_result,mat_joint_traj] = moveTo(mat_R_T_M,optns)
     mat_traj = mat_R_T_M;
     
     %% 3. Convert to joint angles via IKs
-    disp('Converting waypoints to joint angles...');
-    [mat_joint_traj,rob_joint_names] = convertPoseTraj2JointTraj(mat_traj,optns);
+    if optns{'debug'}
+        disp('Converting waypoints to joint angles...');
+    end
+    [mat_joint_traj,rob_joint_names] = ikWithLimits(mat_traj,optns);
 
     %% Visualize trajectory
     % if debug
@@ -54,7 +56,9 @@ function [traj_result,mat_joint_traj] = moveTo(mat_R_T_M,optns)
     r.pick_traj_act_client.ResultFcn = [];
     
     % Convert to trajectory_msgs/FollowJointTrajectory
-    disp('Converting to JointTrajectory format...');
+    if optns{'debug'}
+        disp('Converting to JointTrajectory...');
+    end
     traj_goal = convert2ROSPointVec(mat_joint_traj,...
                                     rob_joint_names,...
                                     1,... %traj_steps
@@ -63,14 +67,20 @@ function [traj_result,mat_joint_traj] = moveTo(mat_R_T_M,optns)
                                     optns);
     
     % Finally send ros trajectory with traj_steps
-    disp('Sending traj to action server...')
+    if optns{'debug'}
+        disp('Sending traj to action server...');
+    end
     
     try waitForServer(r.pick_traj_act_client);
-        disp('Connected to Arm server. Moving arm...')
+        if optns{'debug'}
+            disp('Connected to Arm server. Moving arm...')
+        end
         [traj_result,state,status] = sendGoalAndWait(r.pick_traj_act_client,traj_goal);
     catch
         % Re-attempt
-        disp('First try failed... Trying again...');
+        if optns{'debug'}
+            disp('Failed to connect to Arm server. Retrying...');
+        end
         [traj_result,state,status] = sendGoalAndWait(r.pick_traj_act_client,traj_goal);
     end 
 
