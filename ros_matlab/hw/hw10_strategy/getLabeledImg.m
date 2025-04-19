@@ -1,4 +1,4 @@
-function [bboxes, scores, labels, numObjects, myImg, annotatedImage] = getLabeledImg(zone, optns)
+function [bboxes, scores, labels, numObjects, annotatedImage] = getLabeledImg(myImg, general_detector)
 % ------------------------------------------------------------------------
 % Takes a picture by accessing a subscriber, loads the dector and labels
 % the image taken, and displays it.
@@ -18,47 +18,22 @@ function [bboxes, scores, labels, numObjects, myImg, annotatedImage] = getLabele
 %   annotatedImage - myImg but with bounding boxes, scores, and labels for
 %               each objects detected
 % ------------------------------------------------------------------------
-    %% Get the ROS Class handel
-    r = optns{'rHandle'};
-
-    %% Take picture and Read the Image
-    if optns{'debug'}
-        disp("Taking picture...")
-    end
-
-    rosImg  = receive(r.rgb_sub);
-    myImg   = rosReadImage(rosImg,"PreserveStructureOnRead",true);
-    
-    %% Bounding Boxes
-    if optns{'debug'}
-        disp("Computing bounding boxes, scores, and labels...")
-    end
-
     %% According to strategy leverage different detectors...
-    pretrained = r.general_detector;
-    trainedYoloNet = pretrained.detector;
+    trainedYoloNet = general_detector.detector;
 
     %% TODO: Detect objects using yolo. Output bboxes, scores, labels. Threshold of 0.7
     [bboxes,scores,labels] = detect(trainedYoloNet,myImg,Threshold=0.7);
 
     %% TODO: Visualize the detected objects' bounding boxes by calling insertObjectAnnotation and save to annotatedImage
-    if optns{'debug'}
-        disp("Drawing bounding boxes...")
-    end
+
     annotatedImage = insertObjectAnnotation(im2uint8(myImg), ...
                                             'Rectangle',...
                                             bboxes,...
                                             string(labels)+":"+string(scores),...
                                             'Color','cyan');
 
-    % Display
-    if optns{'debug'}
-        figure(1), imshow(annotatedImage);
-    end
-
     %% Specify percentage of acceptable bounding box
     numObjects = size(bboxes,1);
-
 end
 
 
