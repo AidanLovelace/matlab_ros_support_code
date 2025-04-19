@@ -1,6 +1,13 @@
 %% Main Code to Start ARM Pick and Place.
 clear; close all; clc; echo off;
 
+currentFolderContents = dir(pwd);      % Returns all files and folders in the current folder
+currentFolderContents (~[currentFolderContents.isdir]) = [];  % Only keep the folders
+
+for i = 3:length(currentFolderContents) % Start with 3 to avoid '.' and '..' 
+    addpath(['./' currentFolderContents(i).name]);
+end
+
 cprintf('*blue', '\n===========================================\n');
 cprintf('*green', '   ARM Pick and Place Challenge Started\n');
 cprintf('*green', '      submission by Aidan Lovelace\n');
@@ -26,19 +33,9 @@ resetWorld(optns);
 cprintf('blue','Starting Static Zones 1 & 2...\n');
 
 % Can create a flag in optns to choose whether to do static/automated.
-optns{'static'} = false;
 
-if optns{'static'}
-    cprintf('text',' - Using static positions\n');
-    % -- can set things statically (needs to identiy poses if scene changes)
-    staticPickAndPlace(optns); % Not preferred. 
-
-else
-    % Automated method
-    cprintf('text',' - Using pose estimation\n');
-    PickandPlaceARMChallenge('Zone1', optns);
-    PickandPlaceARMChallenge('Zone2', optns);
-end
+PickandPlaceARMChallenge('Zone1', optns);
+PickandPlaceARMChallenge('Zone2', optns);
 
 % Yellow zone 3, medium
 cprintf('blue','\n\nStarting Zone 3...\n');
