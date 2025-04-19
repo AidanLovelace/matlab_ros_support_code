@@ -38,7 +38,7 @@ function [zoneComplete] = PickandPlaceARMChallenge(zoneInspect, optns)
     % Get the pose of each detected object
     cprintf('blue', '%s: ', zoneInspect); fprintf('04 Obtaining object poses...\n');
     objectData = getObjectData(ptCloud_pic, nonPlane_pic, myImg, bboxes, numOfObjects, base_to_cam_pose, cam_to_base_pose, labeled);     
-    objectData
+    
     % Iterate over each detected object
     numObjects = size(objectData,1);
     cprintf('blue', '%s: ', zoneInspect); fprintf('Identified %d objects...\n', numObjects);

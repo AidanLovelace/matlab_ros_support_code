@@ -1,4 +1,4 @@
-function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_base_pose] = getMergedPTC(zoneInspect, optns) 
+function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_base_pose] = getMergedPTC(optns, locations) 
 %--------------------------------------------------------------------------    
 % Merges multiple point clouds from different gripper positions.
 %
@@ -32,9 +32,7 @@ function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_bas
 %--------------------------------------------------------------------------
 
     % Extract point cloud and transforms in both directions
-    pause(1);
     [ptCloud_world, ~, base_to_cam_pose, cam_to_base_pose] = messyGetPointCloud(optns);
-
     %% Gather the x and y limits of this very first point cloud and store them
     %% TO_ENHANCE: convert to a function
     xlim_min = ptCloud_world.XLimits(1,1);
@@ -52,7 +50,6 @@ function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_bas
     %% Crop point cloud wrt to z values
     indices = findPointsInROI(ptCloud_world,roi);
     ptCloud_world = select(ptCloud_world,indices);
-    
     %% Update xyz limits given the new point cloud
     xlim_min = ptCloud_world.XLimits(1,1);
     xlim_max = ptCloud_world.XLimits(1,2);
@@ -71,19 +68,18 @@ function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_bas
     
     %% Gripper pose
     mat_R_T_G = get_gripper_pose(optns);
-    cur_gripper_location = get_gripper_pose(optns);
+    cur_gripper_location = mat_R_T_G;
 
     %% Compute locations for the arm to move to: (f-forward, l-left, r-right, b-back)
-    if strcmpi(zoneInspect, "Zone3")
+    if size(locations,1) == 0
         locations = {'f', 'l','r'};
-   
-    else   
+    elseif locations == "all"
         % We repeat locations. First four have no angle offset, last four will 
-        locations = {'f', 'b', 'l','r',...
-                 'f', 'b', 'l','r',};
+        locations = {'f', 'b', 'l','r','f', 'b', 'l','r',};
     end
-    
+
     %% Move the arm to each of these locations and take pc pic
+    currentFuture = parfeval(@(a) a,1, ptCloud_world);
     for iter = 1:length(locations)
         cprintf('text', ' - Moving to location %s...\n', string(iter));
         % a) Move arm to ith location: 
@@ -100,26 +96,13 @@ function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_bas
 
         % b) Get point cloud (above) at that location
         cprintf('text', '    - Collecting point cloud...\n');
-        pause(1);
+        % pause(2);
         [ptCloud_recent, ~, ~, ~] = messyGetPointCloud(optns);
-
-        % c) Merge ptCloud_world and ptCloud_recent (world+above) with a grid step of 0.001 and output to ptCloud_world
-        cprintf('text', '    - Point cloud merged into world point cloud...\n');
-        ptCloud_world = pcmerge(ptCloud_world, ptCloud_recent, 0.001);
-
-        % d) Find relevant points from merged pt cloud
-        indices = findPointsInROI(ptCloud_world,table_roi);
-
-        % Select indecs for ptCloud_world and output ptCloud_world
-        ptCloud_world = select(ptCloud_world, indices);
-
-        %% e) Visualize
-        if optns{'debug'}
-            figure(2); 
-            pcshow(ptCloud_world,'ViewPlane','XY');
-            axis on;
-        end
+        wait(currentFuture);
+        ptCloud_world = fetchOutputs(currentFuture);
+        currentFuture = parfeval(@merge_ptClouds,1,ptCloud_world,ptCloud_recent,table_roi);
     end
+
 
     %% To resent move arm back to original position (per zone)
     moveTo(cur_gripper_location,optns);  
@@ -148,7 +131,7 @@ function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_bas
     
     %% Show Merged Point Clouds
     
-    % if optns{'debug'}
+    if optns{'debug'}
         disp("Plotting final merged point cloud for the subzone...")
 
         figure(2),pcshow(plane_pic,'ViewPlane','XY');axis on;
@@ -158,5 +141,14 @@ function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_bas
         
         % Labels
         xlabel("X"); ylabel("Y"); zlabel("Z"); title("Cropped merged point cloud wrt base link");
-    % end    
+
+    end    
+end
+
+
+function merged_ptCloud = merge_ptClouds(ptCloud1, ptCloud2, table_roi)
+    merged_ptCloud = pcmerge(ptCloud1, ptCloud2, 0.001);
+    % Filter to just the table ROI
+    indices = findPointsInROI(merged_ptCloud,table_roi);
+    merged_ptCloud = select(merged_ptCloud, indices);
 end

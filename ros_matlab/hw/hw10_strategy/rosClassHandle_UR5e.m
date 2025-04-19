@@ -37,6 +37,7 @@ classdef rosClassHandle_UR5e
         % Images
         %ds;        
         rgb_sub;
+        caminfo_sub;
         pt_cloud_sub;
 
         % Yolo NN
@@ -94,8 +95,8 @@ classdef rosClassHandle_UR5e
             r.gik.ConstraintInputs = {'pose', 'jointbounds'};
 
             r.jointCon = constraintJointBounds(r.UR5eROBOT);
-            r.jointCon.Bounds = [-1.75, -pi/4, -pi/8, -2*pi, -2*pi, -2*pi; ...
-                                  1.75, pi/2, 3*pi/4, 2*pi, 2*pi, 2*pi]';
+            r.jointCon.Bounds = [-2.00, -pi/4, -pi/8, -3*pi/4, -pi/4, -pi; ...
+                                  1.75, pi/2, 3*pi/4, 0, pi/4, pi]';
 
             % TF
             r.tftree                  = rostf('DataFormat','struct');
@@ -103,6 +104,7 @@ classdef rosClassHandle_UR5e
             
             % Vision
             r.rgb_sub                 = rossubscriber('/camera/rgb/image_raw','DataFormat','struct');
+            r.caminfo_sub             = rossubscriber('/camera/rgb/camera_info','DataFormat','struct');
             r.pt_cloud_sub            = rossubscriber('/camera/depth/points','DataFormat','struct');
             
             % Yolo Neural Network (careful with the path)

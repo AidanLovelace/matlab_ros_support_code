@@ -5,8 +5,7 @@ function [ptCloud_tform, ptCloud, base_to_cam_pose, cam_to_base_pose] = messyGet
     
     %% Get point cloud
     disp("Creating point cloud...")
-    ds = r.pt_cloud_sub;
-    pc = receive(ds,2);
+    pc = receive(r.pt_cloud_sub, 2);
 
     % Extract xyz points
     xyz = rosReadXYZ(pc,"PreserveStructureOnRead",true);
