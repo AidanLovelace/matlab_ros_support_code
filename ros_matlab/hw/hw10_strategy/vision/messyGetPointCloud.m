@@ -7,6 +7,7 @@ function [ptCloud_tform, ptCloud, base_to_cam_pose, cam_to_base_pose] = messyGet
     if optns{'debug'}
         disp("Creating point cloud...")
     end
+    pause(0.5);
     ds = r.pt_cloud_sub;
     pc = receive(ds);
 
@@ -16,8 +17,6 @@ function [ptCloud_tform, ptCloud, base_to_cam_pose, cam_to_base_pose] = messyGet
     % Extract point cloude
     ptCloud = pointCloud(xyz); 
 
-
-
     %% Get base_link to camera_depth_link transform
     tftree       = rostf('DataFormat','struct');     
     base         = 'base_link';
@@ -26,7 +25,7 @@ function [ptCloud_tform, ptCloud, base_to_cam_pose, cam_to_base_pose] = messyGet
     % Compute the ROS/Gazebo transform from base_link to camera_depth_link
     waitForTransform(tftree, base, end_effector);
     base_to_camera = getTransform(tftree, base, end_effector, rostime('now'),'Timeout', r.tf_listening_time);
-
+    pause(0.5);
     %% base_to_camera 4x4 transform matrix
     % Using base to camera transformation gotten from gazebo when the point
     % cloud was extracted, making a pos variable from its translation.

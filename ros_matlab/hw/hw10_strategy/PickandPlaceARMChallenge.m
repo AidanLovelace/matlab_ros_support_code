@@ -22,42 +22,68 @@ function [zoneComplete] = PickandPlaceARMChallenge(zoneInspect, optns)
     
     % Inspect the zone and get the number of subZones and joint configurations for each subZone
     [startZone] = returnZoneJointConfig(zoneInspect);
+    logPrint(4, 'PickandPlaceARMChallenge-'+string(zoneInspect), 0, 'blue', "Retreived zone start configuration: [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f]", startZone(1), startZone(2), startZone(3), startZone(4), startZone(5), startZone(6));
     
     % Move the robot to the inspected object's joint configuration
-    cprintf('blue', '%s: ', zoneInspect); fprintf('01 Moving to zone at config %s...\n', strjoin(string(startZone)) );
-    optns{'traj_duration'} = .1;
+    logPrint(1, 'PickandPlaceARMChallenge-'+string(zoneInspect), 0, '', "Moving to zone start position");
     moveToQ("Custom",optns,startZone);
     
     % Capture an image of the zone and detect objects
-    cprintf('blue', '%s: ', zoneInspect); fprintf('Object Detection...\n');
-    if exist(string(zoneInspect)+"-objectsData.mat", "file")
-        saveFile = load(string(zoneInspect)+"-objectsData.mat");
-        objects = saveFile.objects;
-        W_T_ptCloud = saveFile.W_T_ptCloud;
-        W_T_R = saveFile.W_T_R;
-        R_T_C = saveFile.R_T_C;
-        frustums = saveFile.frustums;
-    else
-        [objects, W_T_ptCloud, ~, ~, W_T_R, R_T_C, frustums] = locateObjectsHere(optns);
-        save(string(zoneInspect)+"-objectsData.mat", 'objects', 'W_T_ptCloud', 'W_T_R', 'R_T_C', 'frustums');
+    logPrint(0, 'PickandPlaceARMChallenge-'+string(zoneInspect), 0, 'blue', "Object Detection");
+    if optns{'useZoneObjectsCache'} == 1
+        logPrint(1, 'PickandPlaceARMChallenge-'+string(zoneInspect), 1, '', "Zone Objects Cache is enabled. Attemping to load from cache.");
+        if exist(string(zoneInspect)+"-objectsData.mat", "file")
+            saveFile = load(string(zoneInspect)+"-objectsData.mat");
+            objects = saveFile.objects;
+            W_T_ptCloud = saveFile.W_T_ptCloud;
+            W_T_R = saveFile.W_T_R;
+            R_T_C = saveFile.R_T_C;
+            frustums = saveFile.frustums;
+            logPrint(1, 'PickandPlaceARMChallenge-'+string(zoneInspect), 2, '', "Objects loaded successfully from cache.");
+        else
+            logPrint(1, 'PickandPlaceARMChallenge-'+string(zoneInspect), 2, '', "No cache found. Will perform object detection as normal.");
+        end
     end
 
+    if ~exist('objects', 'var')
+        [objects, W_T_ptCloud, ~, ~, W_T_R, R_T_C, frustums] = locateObjectsHere(optns, zoneInspect);
+        if optns{'useZoneObjectsCache'} == 1
+            save(string(zoneInspect)+"-objectsData.mat", 'objects', 'W_T_ptCloud', 'W_T_R', 'R_T_C', 'frustums');
+            logPrint(1, 'PickandPlaceARMChallenge-'+string(zoneInspect), 1, '', "Zone Objects Cache saved.");
+        end
+    end
+    
+    logPrint(1, 'PickandPlaceARMChallenge-'+string(zoneInspect), 1, '', "Showing debug visualization of this zone, including the point cloud, frustums, bounding boxes, and the fitted object models.");
     debugShowZone(objects, W_T_ptCloud, W_T_R, R_T_C, frustums)
     
     % Iterate over each detected object
     numObjects = size(objects,1);
-    cprintf('blue', '%s: ', zoneInspect); fprintf('Identified %d objects...\n', numObjects);
+    logPrint(1, 'PickandPlaceARMChallenge-'+string(zoneInspect), 1, 'blue', "Picking the Objects.");
     for j = 1:numObjects
         obj = objects{j};
-        cprintf('magenta', ' - Object %d: ', j); cprintf('text', 'Picking %s @ (%.2f, %.2f, %.2f)...\n', obj.label, obj.topCenterPosition(1), obj.topCenterPosition(2), obj.topCenterPosition(3));
-        % pick
-        fprintf('    - Picking...\n');
+        logPrint(1, 'PickandPlaceARMChallenge-'+string(zoneInspect), 2, 'magenta', "Object %d: %s @ (%.2f, %.2f, %.2f)", j, obj.label, obj.topCenterPosition(1), obj.topCenterPosition(2), obj.topCenterPosition(3));
+        
+        logPrint(2, 'PickandPlaceARMChallenge-'+string(zoneInspect), 2, '', "Moving to zone start position.");
         moveToQ("Custom", optns, startZone);
+        logPrint(2, 'PickandPlaceARMChallenge-'+string(zoneInspect), 2, '', "Picking object up.");
         pick("topdown", obj.pickPose, obj.label, optns);
         
-        % place
-        fprintf('    - Placing...\n');
+        logPrint(2, 'PickandPlaceARMChallenge-'+string(zoneInspect), 2, '', "Moving back to zone start position.");
         moveToQ("Custom", optns, startZone);
+        if optns{'comparePicksWithGazebo'}
+            pause(0.3);
+            % Check if we actually picked the object
+            [currentGripperPos, currentModelPos] = get_robot_object_pose_wrt_base_link(obj.gazeboMatch.modelName, 1, optns);
+            currentModelPos = [currentModelPos(1, 4), currentModelPos(2, 4), currentModelPos(3, 4)];
+            currentGripperPos = [currentGripperPos(1, 4), currentGripperPos(2, 4), currentGripperPos(3, 4)];
+            d = sqrt(sum((currentModelPos - currentGripperPos) .^ 2));
+            if abs(d - obj.gazeboMatch.dist) > 0.2
+                logPrint(2, 'PickandPlaceARMChallenge-'+string(zoneInspect), 2, '*red', "According to model position in Gazebo, failed to pick object. Gripper-to-'%s' Distance: %.2f", obj.gazeboMatch.modelName, d);
+            else
+                logPrint(2, 'PickandPlaceARMChallenge-'+string(zoneInspect), 2, '*green', "According to model position in Gazebo, successfully picked object. Gripper-to-'%s' Distance: %.2f", obj.gazeboMatch.modelName, d);
+            end
+        end
+        logPrint(2, 'PickandPlaceARMChallenge-'+string(zoneInspect), 2, '', "Placing object in bin.");
         place("topdown", obj.label, optns); % label for knowing which bin to go to
     
     end

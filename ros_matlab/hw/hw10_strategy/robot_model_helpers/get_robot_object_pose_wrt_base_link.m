@@ -33,7 +33,7 @@ function [mat_R_T_G, mat_R_T_M] = get_robot_object_pose_wrt_base_link(model_name
 
     
     %% 1. Get Poses from matlab wrt to World
-    disp('Setting the goal...');
+    % disp('Setting the goal...');
 
     % Robot's base_link and model pose wrt gazebo world origin
     W_T_R = get_model_pose('robot', optns);

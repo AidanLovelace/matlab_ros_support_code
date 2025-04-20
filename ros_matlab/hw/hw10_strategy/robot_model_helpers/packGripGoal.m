@@ -46,7 +46,7 @@ function gripGoal=packGripGoal(pos,gripGoal)
     
     % Time Stamp
     if numJoints == 1
-        r.trajPtsVar.TimeFromStart   = rosduration(1);
+        r.trajPtsVar.TimeFromStart   = rosduration(0.5);
     else
         r.trajPtsVar.TimeFromStart   = rosduration(jointWaypointTimes);
     end

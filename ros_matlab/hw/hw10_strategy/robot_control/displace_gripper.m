@@ -18,6 +18,8 @@ function gripper_pose = displace_gripper(gripper_pose,optns,direction,offset,ang
     %% Local Variables
     optns('traj_duration')={[0.5]};
 
+    vertical_offset = 0.2; % move down to get more detail
+
     %% Default options
     if nargin == 2
         direction = 'f';
@@ -42,6 +44,7 @@ function gripper_pose = displace_gripper(gripper_pose,optns,direction,offset,ang
     % Move forward 10cm from central position
     if strcmpi(direction, 'f')
         gripper_pose(2,4) = gripper_pose(2,4) + offset;
+        gripper_pose(3,4) = gripper_pose(3,4) - vertical_offset; % move down to get more detail
         moveTo(gripper_pose, optns);
       
         % Adjust angles once and keep fixed
@@ -54,6 +57,7 @@ function gripper_pose = displace_gripper(gripper_pose,optns,direction,offset,ang
     %% Move back 10cm from central position
     elseif strcmpi(direction, 'b')
         gripper_pose(2,4) = gripper_pose(2,4) - offset;
+        gripper_pose(3,4) = gripper_pose(3,4) - vertical_offset; % move down to get more detail
         moveTo(gripper_pose, optns);
         % Adjust angles once and keep fixed
         if ang
@@ -65,6 +69,7 @@ function gripper_pose = displace_gripper(gripper_pose,optns,direction,offset,ang
     %% Move left (facing towards the back of robot, i.e. matlab -x direction)
     elseif strcmpi(direction, 'l')
         gripper_pose(1,4) = gripper_pose(1,4) - offset;
+        gripper_pose(3,4) = gripper_pose(3,4) - vertical_offset; % move down to get more detail
         moveTo(gripper_pose, optns);
         
         % Adjust angles once and keep fixed
@@ -77,6 +82,7 @@ function gripper_pose = displace_gripper(gripper_pose,optns,direction,offset,ang
     %% Move right
     elseif strcmpi(direction, 'r')
         gripper_pose(1,4) = gripper_pose(1,4) + offset;
+        gripper_pose(3,4) = gripper_pose(3,4) - vertical_offset; % move down to get more detail
         moveTo(gripper_pose, optns);
 
         % Adjust angles once and keep fixed
@@ -87,6 +93,7 @@ function gripper_pose = displace_gripper(gripper_pose,optns,direction,offset,ang
         end
     elseif strcmpi(direction, 'u')
         gripper_pose(3,4) = gripper_pose(3,4) + offset;
+        gripper_pose(3,4) = gripper_pose(3,4) - vertical_offset; % move down to get more detail
         moveTo(gripper_pose, optns);
     
         % Adjust angles once and keep fixed

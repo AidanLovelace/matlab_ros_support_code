@@ -5,7 +5,7 @@ function mat_R_T_G = robToGrip
     toolAdjustmentFlag  = 1;     % Indicates we have fingers but have not adjusted IKs for it.    
    
     %% 1. Get Poses from matlab wrt to World
-    disp('Setting the goal...');
+    % disp('Setting the goal...');
 
     % Robot's base_link and model pose wrt gazebo world origin
     W_T_R = get_model_pose('robot');

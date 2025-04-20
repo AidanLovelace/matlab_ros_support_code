@@ -26,23 +26,24 @@ function grip_result = pick(strategy, mat_R_T_M, label, optns)
     %% 1) Determine z offset and grip distance required
     %   z offset includes offset for both the base and the gripper
         if contains(string(label), "pouch")
-            % zOffset = 0.156;
+            zOffset = 0.05;
             doGripValue = 0.59; %0.61
         
         elseif contains(string(label), "vCan")
             zOffset = 0.01;
-            doGripValue = 0.231;
+            doGripValue = 0.229;
         
         elseif contains(string(label), "hCan")
             % zOffset = 0.15;
             doGripValue = 0.231;
         
         elseif contains(string(label), "vBottle")
-            zOffset = 0.00;
-            doGripValue = 0.38;        
+            zOffset = -0.01;
+            % doGripValue = 0.35;        
+            doGripValue = 0.21;        
         
         elseif contains(string(label), "hBottle")
-            zOffset = 0.00;
+            zOffset = -0.01;
             doGripValue = 0.21;
 
         elseif contains(string(label), "marker")
@@ -53,25 +54,31 @@ function grip_result = pick(strategy, mat_R_T_M, label, optns)
             % zOffset = -1; % TODO
             doGripValue = -1; % TODO
         end
-
-    %% 2) Move to desired location
+        logPrint(4, 'pick-'+string(label), 3, '', "travelZOffset = %.2f", travelZOffset);
+        logPrint(4, 'pick-'+string(label), 3, '', "hoverZOffset = %.2f", hoverZOffset);
+        logPrint(4, 'pick-'+string(label), 3, '', "zOffset = %.2f", zOffset);
+        logPrint(4, 'pick-'+string(label), 3, '', "doGripValue = %.2f", doGripValue);
+        
+        %% 2) Move to desired location
         % Account for base offset + Hover over object
-        optns{'traj_duration'} = 0.5;
         travel_over_R_T_M = lift(mat_R_T_M, travelZOffset);
         over_R_T_M = lift(mat_R_T_M, hoverZOffset);
-        optns{'traj_duration'} = 0.25;
         mat_R_T_M = lift(mat_R_T_M, zOffset);
+        logPrint(4, 'pick-'+string(label), 3, '', "Moving above object");
         moveTo(travel_over_R_T_M, optns);
         pause(0.25);
+        logPrint(4, 'pick-'+string(label), 3, '', "Moving directly over object");
         moveTo(over_R_T_M, optns);
         pause(0.25);
+        logPrint(4, 'pick-'+string(label), 3, '', "Moving to final pick position");
         moveTo(mat_R_T_M, optns);
         pause(0.25);
         
+        logPrint(4, 'pick-'+string(label), 3, '', "Closing gripper");
         [grip_result, ~] = doGrip('pick', optns, doGripValue); 
         grip_result = grip_result.ErrorCode;
         pause(3);
+        logPrint(4, 'pick-'+string(label), 3, '', "Moving back to directly over object");
         moveTo(over_R_T_M, optns);
-        optns{'traj_duration'} = 0.1;
         pause(0.25);
 end

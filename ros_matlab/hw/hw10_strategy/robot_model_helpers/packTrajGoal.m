@@ -1,5 +1,5 @@
 function trajGoal = packTrajGoal(config,trajGoal)
-    jointWaypointTimes  = 3;
+    jointWaypointTimes  = 0.5;
     jointWaypoints      = config';
     numJoints           = size(jointWaypoints,1);
     r = rosClassHandle;

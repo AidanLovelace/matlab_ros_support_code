@@ -34,7 +34,7 @@ function traj_goal = convert2ROSPointVec(mat_joint_traj, robot_joint_names, traj
         
         % Extract each waypoint and set it as a 6x1 (use transpose)
 	    r.point.Positions     = mat2rosJoints( mat_joint_traj(1, :) )'; 
-        r.point.TimeFromStart = rosduration(1,'DataFormat','struct');
+        r.point.TimeFromStart = rosduration(timeStep,'DataFormat','struct');
 
         % Set inside points cell
         points{1} = r.point; 
@@ -51,9 +51,9 @@ function traj_goal = convert2ROSPointVec(mat_joint_traj, robot_joint_names, traj
     
             % Set time with format as structure
             if traj_steps == 1
-                r.point.TimeFromStart = rosduration(0.25, 'DataFormat','struct');
+                r.point.TimeFromStart = rosduration(timeStep, 'DataFormat','struct');
             else
-	            r.point.TimeFromStart = rosduration(0.25, 'DataFormat','struct');    
+	            r.point.TimeFromStart = rosduration(timeStep, 'DataFormat','struct');    
             end
             
             % Set inside points cell

@@ -4,7 +4,7 @@ function debugShowZone(objects, W_T_ptCloud, W_T_R, R_T_C, frustums)
     hold on;
     for i = 1:size(objects,1)
         obj = objects{i};
-        cprintf('text', ' - %s - (%.2f, %.2f, %.2f)...\n', obj.label, obj.topCenterPosition(1), obj.topCenterPosition(2), obj.topCenterPosition(3));
+        % cprintf('text', ' - %s - (%.2f, %.2f, %.2f)...\n', obj.label, obj.topCenterPosition(1), obj.topCenterPosition(2), obj.topCenterPosition(3));
         % Plot the fitted cylinder
         plot(obj.model);
         hold on;

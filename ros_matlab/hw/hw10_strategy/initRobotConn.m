@@ -53,7 +53,10 @@ function optns = initRobotConn(masterhostIP, nodeIP, robotName)
                 "toolAdjustment", ...
                 "tf_listening_time",...
                 "rHandle",...
-                "cleanStart"];
+                "cleanStart",...
+                "useZoneObjectsCache",...
+                "logVerbosity",...
+                "comparePicksWithGazebo"];
        
        values = {  0,...        "debug"
                    0,...        "toolFlag"
@@ -69,6 +72,9 @@ function optns = initRobotConn(masterhostIP, nodeIP, robotName)
                    10,...       "tf_listening_time"
                    r,...        "rHandle"
                    true,...     "cleanStart"
+                   0,...        "useZoneObjectsCache"
+                   6,...        "logVerbosity"
+                   1,...        "comparePicksWithGazebo"
                    };
         optns = dictionary(keys,values);    
     end

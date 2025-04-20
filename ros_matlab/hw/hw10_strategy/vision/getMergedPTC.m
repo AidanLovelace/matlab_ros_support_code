@@ -33,6 +33,7 @@ function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_bas
 
     % Extract point cloud and transforms in both directions
     [ptCloud_world, ~, base_to_cam_pose, cam_to_base_pose] = messyGetPointCloud(optns);
+    logPrint(2, 'getMergedPTC', 2, '', "Initial point cloud acquired.");
     %% Gather the x and y limits of this very first point cloud and store them
     %% TO_ENHANCE: convert to a function
     xlim_min = ptCloud_world.XLimits(1,1);
@@ -59,17 +60,17 @@ function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_bas
     
     % Hard-coded z-limits
     zlim_min = -0.13; zlim_max = 0.4;
-
+    
     % New ROI for object
     pic_roi = [xlim_min xlim_max ylim_min ylim_max zlim_min zlim_max];
-
+    
     % Hard-coded ROI for table
     table_roi = [-0.3 2 -1.5 1.5 zlim_min zlim_max];
     
     %% Gripper pose
     mat_R_T_G = get_gripper_pose(optns);
     cur_gripper_location = mat_R_T_G;
-
+    
     %% Compute locations for the arm to move to: (f-forward, l-left, r-right, b-back)
     if size(locations,1) == 0
         locations = {'f', 'l','r'};
@@ -77,34 +78,37 @@ function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_bas
         % We repeat locations. First four have no angle offset, last four will 
         locations = {'f', 'b', 'l','r','f', 'b', 'l','r',};
     end
-
+    
     %% Move the arm to each of these locations and take pc pic
     currentFuture = parfeval(@(a) a,1, ptCloud_world);
     for iter = 1:length(locations)
-        cprintf('text', ' - Moving to location %s...\n', string(iter));
+        logPrint(2, 'getMergedPTC', 3, '', "Point Cloud Location %d", iter);
         % a) Move arm to ith location: 
 
+        logPrint(3, 'getMergedPTC', 4, '', "Moving to %s location...", locations{iter});
         % These gripper motions are planar (no gripper rotation)
         if iter < 5
-            displaceG = displace_gripper(mat_R_T_G,optns,locations{iter},0.14);
+            displaceG = displace_gripper(mat_R_T_G,optns,locations{iter},0.12);
         
         % These motions rotate the gripper inwards at end of displacement
         % to center object.
         elseif iter > 5
-             displaceGA = displace_gripper(mat_R_T_G,optns,locations{iter},0.14,1,0.05);
+             displaceGA = displace_gripper(mat_R_T_G,optns,locations{iter},0.12,1,0.05);
         end
 
         % b) Get point cloud (above) at that location
-        cprintf('text', '    - Collecting point cloud...\n');
-        % pause(2);
         [ptCloud_recent, ~, ~, ~] = messyGetPointCloud(optns);
+        logPrint(3, 'getMergedPTC', 4, '', "Point Cloud acquired.");
+        logPrint(4, 'getMergedPTC', 4, '', "Waiting for previous point cloud merging to finish...");
         wait(currentFuture);
         ptCloud_world = fetchOutputs(currentFuture);
+        logPrint(4, 'getMergedPTC', 4, '', "Complete. Dispatching (async) this point cloud to merge with previous one.");
         currentFuture = parfeval(@merge_ptClouds,1,ptCloud_world,ptCloud_recent,table_roi);
     end
 
 
     %% To resent move arm back to original position (per zone)
+    logPrint(2, 'getMergedPTC', 2, '', "Return to start position.");
     moveTo(cur_gripper_location,optns);  
     
     %% Cropping the merged point cloud to the area of our picture
@@ -124,25 +128,11 @@ function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_bas
 
     % TODO: Fit the horizontal plane given ptCloud_pic and the three arguments above.
     [param, planeIdx, nonPlaneIdx] = pcfitplane(ptCloud_pic, planeThickness, normalVector, maxPlaneTilt);
-
+    
     % Create indexed entities
     plane_pic = select(ptCloud_pic, planeIdx);
     nonPlane_pic = select(ptCloud_pic, nonPlaneIdx);
-    
-    %% Show Merged Point Clouds
-    
-    if optns{'debug'}
-        disp("Plotting final merged point cloud for the subzone...")
-
-        figure(2),pcshow(plane_pic,'ViewPlane','XY');axis on;
-        
-        % TODO: show nonPlane point cloude with an XY View of the plane and axis on
-        figure(3),pcshow(nonPlane_pic,'ViewPlane','XY');axis on;
-        
-        % Labels
-        xlabel("X"); ylabel("Y"); zlabel("Z"); title("Cropped merged point cloud wrt base link");
-
-    end    
+    logPrint(4, 'getMergedPTC', 2, '', "Removed table top from point cloud.");  
 end
 
 

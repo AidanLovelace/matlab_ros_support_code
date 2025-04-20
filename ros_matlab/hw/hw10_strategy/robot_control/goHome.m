@@ -23,12 +23,15 @@ function [ret,q,state,status] = goHome(config,optns)
     % status [char]- Status text
     %----------------------------------------------------------------------
     % Open Fingers
+    logPrint(4, 'goHome', 1, '', "Opening Fingers");
     doGrip('place', optns);
-
+    
     % Move arm according to config
     if nargin == 0
+        logPrint(4, 'goHome', 1, '', "Moving to default home position");
         [ret,q] = moveToQ('qr', optns);
     else
+        logPrint(4, 'goHome', 1, '', "Moving to provided joint configuration");
         [ret,q] = moveToQ(config, optns);
     end
 end

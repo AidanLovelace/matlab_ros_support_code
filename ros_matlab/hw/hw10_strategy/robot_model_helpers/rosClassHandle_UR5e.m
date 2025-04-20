@@ -62,7 +62,7 @@ classdef rosClassHandle_UR5e
             r.get_models_state_client = rossvcclient('/gazebo/get_model_state','DataFormat','struct');
 
             % Actions
-            r.TimeFromStart           = rosduration(1,'DataFormat','struct');
+            r.TimeFromStart           = rosduration(0.5,'DataFormat','struct');
             
             r.point                   = rosmessage('trajectory_msgs/JointTrajectoryPoint', 'DataFormat','struct');                        
             r.trajPts                 = rosmessage('trajectory_msgs/JointTrajectoryPoint','DataFormat', 'struct');
