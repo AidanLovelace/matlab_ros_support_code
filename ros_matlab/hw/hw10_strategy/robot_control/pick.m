@@ -1,4 +1,4 @@
-function grip_result = pick(strategy,objectData,optns)
+function grip_result = pick(strategy, mat_R_T_M, label, optns)
     %----------------------------------------------------------------------
     % pick 
     % Top-level function to executed a complete pick. 
@@ -19,74 +19,59 @@ function grip_result = pick(strategy,objectData,optns)
     % need to be added to this file. That will require tinkering.
     %----------------------------------------------------------------------
      
-    % Check type of objectData. If matrix, assign directly; otherwise
-    % extract.
-    if isequal(size(objectData), [4, 4]) && isnumeric(objectData)
-        mat_R_T_M = objectData;
-        label = "can";
-    
-    % Extract pose and label from object
-    else
-        label = objectData{1,1};         
-        mat_R_T_M = objectData{1,2};         
-    end
-    % pause(2);
+    travelZOffset = 0.3;
+    hoverZOffset = 0.06;
     zOffset = 0;
-    doGripValue = 0.22;
+    doGripValue = 0;
     %% 1) Determine z offset and grip distance required
     %   z offset includes offset for both the base and the gripper
-        if strcmpi(string(label), "pouch")
-            zOffset = 0.156;
+        if contains(string(label), "pouch")
+            % zOffset = 0.156;
             doGripValue = 0.59; %0.61
         
-        elseif strcmpi(string(label), "vCan")  %%% COMPLETE
-            zOffset = 0.17;
-            doGripValue = 0.22;
-        
-        elseif strcmpi(string(label), "hCan") % COMPLETE
-            zOffset = 0.15;
+        elseif contains(string(label), "vCan")
+            zOffset = 0.01;
             doGripValue = 0.231;
         
-        elseif strcmpi(string(label), "vBottle") %% COMP
-            zOffset = 0.24;
-            doGripValue = 0.5167;        
+        elseif contains(string(label), "hCan")
+            % zOffset = 0.15;
+            doGripValue = 0.231;
         
-        elseif strcmpi(string(label), "hBottle") % COMPLETE
-            zOffset = 0.12;
+        elseif contains(string(label), "vBottle")
+            zOffset = 0.00;
+            doGripValue = 0.38;        
+        
+        elseif contains(string(label), "hBottle")
+            zOffset = 0.00;
             doGripValue = 0.21;
 
-        elseif strcmpi(string(label), "marker")
-            zOffset = -1; % TODO
+        elseif contains(string(label), "marker")
+            % zOffset = -1; % TODO
             doGripValue = -1; % TODO
         
-        elseif strcmpi(string(label), "spam")
-            zOffset = -1; % TODO
+        elseif contains(string(label), "spam")
+            % zOffset = -1; % TODO
             doGripValue = -1; % TODO
         end
 
     %% 2) Move to desired location
         % Account for base offset + Hover over object
-        if strcmp(strategy,'topdown')
-            if strcmpi(string(label), "pouch")
-                over_R_T_M = lift(mat_R_T_M,0.25);
-                MoveToHover = moveTo(over_R_T_M,optns);
-    
-                mat_R_T_M(3,4)= (mat_R_T_M(3,4)+zOffset);
-                mat_R_T_M = mat_R_T_M * trotz(pi/8);
-                MoveToOb = moveTo(mat_R_T_M, optns);
-            else 
-                over_R_T_M = lift(mat_R_T_M,0.25);
-                MoveToHover = moveTo(over_R_T_M,optns);
-    
-                mat_R_T_M(3,4)= mat_R_T_M(3,4)+zOffset;
-                MoveToOb = moveTo(mat_R_T_M, optns);
-            end       
-
-        elseif strcmpi(strategy,'direct')
-            traj_result = moveTo(mat_R_T_M,optns);
-        end
-        % Grip object
-        [grip_result,grip_state] = doGrip('pick',optns,doGripValue); 
+        optns{'traj_duration'} = 0.5;
+        travel_over_R_T_M = lift(mat_R_T_M, travelZOffset);
+        over_R_T_M = lift(mat_R_T_M, hoverZOffset);
+        optns{'traj_duration'} = 0.25;
+        mat_R_T_M = lift(mat_R_T_M, zOffset);
+        moveTo(travel_over_R_T_M, optns);
+        pause(0.25);
+        moveTo(over_R_T_M, optns);
+        pause(0.25);
+        moveTo(mat_R_T_M, optns);
+        pause(0.25);
+        
+        [grip_result, ~] = doGrip('pick', optns, doGripValue); 
         grip_result = grip_result.ErrorCode;
-        pause(2);
+        pause(3);
+        moveTo(over_R_T_M, optns);
+        optns{'traj_duration'} = 0.1;
+        pause(0.25);
 end

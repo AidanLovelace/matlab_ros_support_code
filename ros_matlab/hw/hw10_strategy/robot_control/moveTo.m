@@ -51,9 +51,6 @@ function [traj_result,mat_joint_traj] = moveTo(mat_R_T_M,optns)
     % Create action goal message from client
     traj_goal = rosmessage(r.pick_traj_act_client); 
 
-    %% ROS-Matlab Bug 2025, requires clearing feedback/result
-    r.pick_traj_act_client.FeedbackFcn = [];
-    r.pick_traj_act_client.ResultFcn = [];
     
     % Convert to trajectory_msgs/FollowJointTrajectory
     if optns{'debug'}
@@ -72,20 +69,10 @@ function [traj_result,mat_joint_traj] = moveTo(mat_R_T_M,optns)
     end
     
     try waitForServer(r.pick_traj_act_client);
-        if optns{'debug'}
-            disp('Connected to Arm server. Moving arm...')
-        end
         [traj_result,state,status] = sendGoalAndWait(r.pick_traj_act_client,traj_goal);
     catch
-        % Re-attempt
-        if optns{'debug'}
-            disp('Failed to connect to Arm server. Retrying...');
-        end
         [traj_result,state,status] = sendGoalAndWait(r.pick_traj_act_client,traj_goal);
     end 
 
     traj_result = traj_result.ErrorCode;
-
-    % If you want to cancel the goal, run this command
-    %cancelGoal(pick_traj_act_client);
 end

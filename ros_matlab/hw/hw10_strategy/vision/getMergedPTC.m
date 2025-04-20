@@ -86,12 +86,12 @@ function [ptCloud_pic, nonPlane_pic, ptCloud_world, base_to_cam_pose, cam_to_bas
 
         % These gripper motions are planar (no gripper rotation)
         if iter < 5
-            displaceG = displace_gripper(mat_R_T_G,optns,locations{iter},0.07);
+            displaceG = displace_gripper(mat_R_T_G,optns,locations{iter},0.14);
         
         % These motions rotate the gripper inwards at end of displacement
         % to center object.
         elseif iter > 5
-             displaceGA = displace_gripper(mat_R_T_G,optns,locations{iter},0.07,1,0.05);
+             displaceGA = displace_gripper(mat_R_T_G,optns,locations{iter},0.14,1,0.05);
         end
 
         % b) Get point cloud (above) at that location

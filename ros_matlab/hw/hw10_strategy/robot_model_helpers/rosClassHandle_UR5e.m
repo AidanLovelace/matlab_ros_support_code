@@ -95,8 +95,8 @@ classdef rosClassHandle_UR5e
             r.gik.ConstraintInputs = {'pose', 'jointbounds'};
 
             r.jointCon = constraintJointBounds(r.UR5eROBOT);
-            r.jointCon.Bounds = [-2.00, -pi/4, -pi/8, -3*pi/4, -pi/4, -pi; ...
-                                  1.75, pi/2, 3*pi/4, 0, pi/4, pi]';
+            r.jointCon.Bounds = [-2.00, -pi/4, -pi/8, -7*pi/8, -pi/4, -pi; ...
+                                  2.00,  pi/2, 7*pi/8, 0.00,    pi/4, pi]';
 
             % TF
             r.tftree                  = rostf('DataFormat','struct');
