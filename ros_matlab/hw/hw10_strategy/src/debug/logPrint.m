@@ -9,11 +9,11 @@ function logPrint(logLevel, logTopic, indentLevel, style, fmt, varargin)
     %
     % Requires a global variable `logVerbosity`. Messages whose logLevel is
     % greater than logVerbosity will not be printed.
-    
+
     persistent logVerbosity;
-    if isempty(logVerbosity)
-        warning('logVerbosity is not set. Defaulting to 0.');
-        logVerbosity = 6;
+    if nargin == 1
+        logVerbosity = logLevel;
+        return;
     end
     % Only print if level is within verbosity
     if logLevel > logVerbosity

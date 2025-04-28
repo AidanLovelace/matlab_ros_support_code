@@ -1,65 +1,46 @@
-%% Main Code to Start ARM Pick and Place.
-if not(exist('dontreload','var') && dontreload)
-    clear; close all; clc; echo off;
-    logPrint(0, 'main', 0, '*blue',  '==========================================================');
-    logPrint(0, 'main', 0, '*green', '           ARM Pick and Place Challenge Started           ');
-    logPrint(0, 'main', 0, '*green', '              submission by Aidan Lovelace                ');
-    logPrint(0, 'main', 0, '*blue',  '==========================================================');
-    logPrint(0, 'main', 0, 'cyan', "Preparing workspace...")
+% Main Code to Start ARM Pick and Place.
 
-    optns = initRobotConn();
-    % global logVerbosity;
-    logVerbosity = optns{'logVerbosity'};
-    logPrint(0, 'main', 0, 'cyan', "Log Verbosity is " + string(logVerbosity));
-else
-    logPrint(0, 'main', 0, '*blue',  '==========================================================');
-    logPrint(0, 'main', 0, '*green', '           ARM Pick and Place Challenge Started           ');
-    logPrint(0, 'main', 0, '*green', '              submission by Aidan Lovelace                ');
-    logPrint(0, 'main', 0, '*blue',  '==========================================================');
-    logPrint(0, 'main', 0, 'cyan', "Skipping Reload. Using existing workspace.")
-    % global logVerbosity;
-    logVerbosity = optns{'logVerbosity'};
-    logPrint(0, 'main', 0, 'cyan', "Log Verbosity is " + string(logVerbosity));
+logPrint(0, 'main', 0, '*blue',  '==========================================================');
+logPrint(0, 'main', 0, '*green', '           ARM Pick and Place Challenge Started           ');
+logPrint(0, 'main', 0, '*green', '              submission by Aidan Lovelace                ');
+logPrint(0, 'main', 0, '*blue',  '==========================================================');
+% Create options with the ROS connection
+if ~exist('dontreload', 'var')
+    options = OptionsConfig;
+    logPrint(options.LogVerbosity);
+    robotHandle = RobotHandle(options);
+    robotHandle.connect();
 end
 
-%% Go Home
 
-% Go to home position. TODO: if arm already at home, skip call.
+% Go Home
 logPrint(0, 'main', 0, 'blue', "Homing Robot");
-goHome('qr', optns);
+robotHandle.moveToStdPosition('home', 0.5);
 
-%% Reset the simulation
-
-% Reset the world
+% Reset the simulation
 logPrint(0, 'main', 0, 'blue', "Resetting World");
-resetWorld(optns);
-
-objectIdentifier = ObjectIdentifier(optns);
+robotHandle.resetWorld();
 
 % Gray zone 1 & 2, easy
-
-logPrint(0, 'main', 0, '*blue', "========= Zones 1 & 2 =========");
+logPrint(0, 'main', 0, '*blue', "========= Zones 1 =========");
 logPrint(0, 'main', 0, '', "Items will remain the same. No changes to orientation, position, or shape,");
-logPrint(0, 'main', 0, '', "so positions can be hardcoded. Currently, we are not hardcoding the positions.");
+logPrint(0, 'main', 0, '', "so positions are hardcoded. ");
+PickandPlaceARMChallenge('static-Zone1', robotHandle);
 
-PickandPlaceARMChallenge('Zone1', optns);
-PickandPlaceARMChallenge('Zone1', optns);
+logPrint(0, 'main', 0, '*blue', "========= Zones 2 =========");
+logPrint(0, 'main', 0, '', "Items will remain the same. No changes to orientation, position, or shape,");
+logPrint(0, 'main', 0, '', "so positions are hardcoded. ");
+PickandPlaceARMChallenge('static-Zone2', robotHandle);
 
-PickandPlaceARMChallenge('Zone2', optns);
-PickandPlaceARMChallenge('Zone2', optns);
-
-% % Yellow zone 3, medium
+% Yellow zone 3, medium
 logPrint(0, 'main', 0, '*blue', "========= Zone 3 =========");
 logPrint(0, 'main', 0, '', "Objects in this zone can switch type but will not change position.");
-PickandPlaceARMChallenge('Zone3', optns);
-PickandPlaceARMChallenge('Zone3', optns);
+PickandPlaceARMChallenge('Zone3A', robotHandle);
+PickandPlaceARMChallenge('Zone3B', robotHandle);
 
-% % Red zone 4, hard
+% Red zone 4, hard
 logPrint(0, 'main', 0, '*blue', "========= Zone 4 =========");
 logPrint(0, 'main', 0, '', "Items will remain in the same position but may change orientation. I.e., rotated");
-PickandPlaceARMChallenge('Zone4', optns);
+PickandPlaceARMChallenge('Zone4A', robotHandle);
+PickandPlaceARMChallenge('Zone4B', robotHandle);
 
-% % % Blue zone 5, very hard
-% logPrint(0, 'main', 0, '*blue', "========= Zone 5 =========");
-% logPrint(0, 'main', 0, '', "This bin will contain the same items (1 green can, 3 yellow cans and 1 yellow bottle), however the items may change position or orientation.");
-% PickandPlaceARMChallenge('Zone5', optns);
